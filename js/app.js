@@ -31,19 +31,21 @@ const sections = document.querySelectorAll("section"); // selecting all section 
 // function to check if an element in the view port
 
 
-let checkViewPort = new IntersectionObserver(function(entries){
-    if (entries[0].isIntersecting === true)
-        
-        {
-            AddActiveClass(entries[0].target.getAttribute('id'));
-        }
-    
-        else{
-    
-            RemoveAllActiveClass();
-        }
-}, {threshold : [0.5]});
+let isInViewport = function (elem) {
 
+	var distance = elem.getBoundingClientRect();
+	
+    if (distance.top >= 0 &&
+		distance.left >= 0 &&
+		distance.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+		distance.right <= (window.innerWidth || document.documentElement.clientWidth))
+    
+          {
+        return true;
+    } else {
+        return false ;
+    }
+};
 
 /**
  * End Helper Functions
@@ -54,23 +56,32 @@ let checkViewPort = new IntersectionObserver(function(entries){
 // build the nav
 
 document.addEventListener('DOMContentLoaded', addSectionsToNavBar());
-// Add class 'active' to section when near top of viewport
 
-function AddActiveClass(CurrentSectionId){
+// Add class 'active' class to hyper-links and 'your-active-class' to sections when near top of viewport
+
+function AddActiveClass(CurrentSection){
     let nav_links = document.querySelectorAll(".menu__link");
     nav_links.forEach((nav_link)=>{
-        if(nav_link.getAttribute('href') == `#${CurrentSectionId}`) {
+        if(nav_link.getAttribute('href') == `#${CurrentSection.getAttribute("id")}`) {
             nav_link.classList.add("active");
+
         }
     });
+    CurrentSection.classList.add("your-active-class");
 
 }
 
+// remove the active classes
 function RemoveAllActiveClass(){
     let nav_links = document.querySelectorAll(".menu__link");
     nav_links.forEach((nav_link)=>{
         nav_link.classList.remove("active");
     });
+    sections.forEach((section)=>{
+        
+        section.classList.remove("your-active-class");
+    });
+
 }
 // Scroll to anchor ID using scrollTO event
 
@@ -114,8 +125,21 @@ scrollToClickedSection();
 // Set sections as active
 
 
-for(section of sections){
 
-    checkViewPort.observe(section);
+window.addEventListener('scroll', function (event) {
+    sections.forEach((element)=>{
+        
+        // console.log(element);
+        if (isInViewport(element)) {
+            RemoveAllActiveClass();
 
-}
+            AddActiveClass(element);
+            
+        } else if(window.scrollY==0) {
+            RemoveAllActiveClass();
+
+            
+        }
+        
+    }, false);
+});
